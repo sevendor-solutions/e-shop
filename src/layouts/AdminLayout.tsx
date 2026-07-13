@@ -36,6 +36,11 @@ export default function AdminLayout() {
   const { user, logout } = useAuthStore();
   const { theme, toggleTheme } = useThemeStore();
 
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -377,7 +382,7 @@ export default function AdminLayout() {
               <Link to="/" className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-400 hover:text-white">
                 <Globe size={14} /> Go to Storefront
               </Link>
-              <button onClick={logout} className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-red-400 hover:text-red-300">
+              <button onClick={handleLogout} className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-red-400 hover:text-red-300">
                 <LogOut size={14} /> Sign Out
               </button>
             </div>
@@ -659,7 +664,7 @@ export default function AdminLayout() {
                   </Link>
                   <div className="border-t border-[#2c2c2e] my-1"></div>
                   <button
-                    onClick={logout}
+                    onClick={handleLogout}
                     className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-red-400 hover:bg-red-955/20 w-full text-left"
                   >
                     <LogOut size={14} /> Log Out
