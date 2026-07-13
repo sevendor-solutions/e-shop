@@ -83,12 +83,12 @@ export default function AdminLogin() {
     });
   }, []);
 
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, explicitLogout } = useAuthStore();
 
   React.useLayoutEffect(() => {
     if (isAuthenticated) {
       navigate(from, { replace: true });
-    } else {
+    } else if (!explicitLogout) {
       useAuthStore.setState({
         isAuthenticated: true,
         user: {
@@ -104,7 +104,7 @@ export default function AdminLogin() {
       });
       navigate(from, { replace: true });
     }
-  }, [isAuthenticated, navigate, from]);
+  }, [isAuthenticated, explicitLogout, navigate, from]);
 
   const {
     register: registerLogin,

@@ -8,6 +8,7 @@ interface AuthState {
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
+  explicitLogout: boolean; // In-memory flag to handle logout loops
   login: (user: User, token: string, rememberMe?: boolean) => void;
   logout: () => void;
   updateUser: (updatedUser: Partial<User>) => void;
@@ -36,6 +37,7 @@ export const useAuthStore = create<AuthState>()(
         isAuthenticated: isAdminPath,
         loading: false,
         error: null,
+        explicitLogout: false, // Default to false on startup / tab refresh
 
         login: (user, token, rememberMe = false) => {
           if (rememberMe) {
@@ -43,13 +45,13 @@ export const useAuthStore = create<AuthState>()(
           } else {
             sessionStorage.setItem('eshop_jwt_token', token);
           }
-          set({ user, token, isAuthenticated: true, error: null });
+          set({ user, token, isAuthenticated: true, error: null, explicitLogout: false });
         },
 
         logout: () => {
           localStorage.removeItem('eshop_jwt_token');
           sessionStorage.removeItem('eshop_jwt_token');
-          set({ user: null, token: null, isAuthenticated: false, error: null });
+          set({ user: null, token: null, isAuthenticated: false, error: null, explicitLogout: true });
         },
 
         updateUser: (updatedUser) => {
@@ -64,6 +66,7 @@ export const useAuthStore = create<AuthState>()(
     },
     {
       name: 'eshop-auth-storage',
+      // Persist only user details and credentials, do NOT persist explicitLogout (keeps it in-memory)
       partialize: (state) => ({
         user: state.user,
         token: state.token,
@@ -86,6 +89,7 @@ export const useAuthStore = create<AuthState>()(
             } as User,
             token: 'mock-jwt-token-for-usr-1',
             isAuthenticated: true,
+            explicitLogout: false
           };
         }
         return { ...currentState, ...(persistedState as any) };
