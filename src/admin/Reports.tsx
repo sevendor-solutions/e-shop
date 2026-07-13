@@ -272,7 +272,8 @@ export default function AdminReports() {
               sortable: true,
               filter: true,
               resizable: true,
-              flex: 1
+              flex: 1,
+              minWidth: 100
             }}
           />
         </div>

@@ -53,6 +53,7 @@ export default function AdminUsers() {
       headerName: 'Name / Email',
       field: 'name',
       flex: 1.2,
+      minWidth: 180,
       cellRenderer: (params: any) => {
         const u = params.data;
         if (!u) return null;
@@ -73,6 +74,7 @@ export default function AdminUsers() {
       headerName: 'Role',
       field: 'role',
       width: 110,
+      minWidth: 100,
       cellRenderer: (params: any) => {
         const role = params.value;
         return (
@@ -88,6 +90,7 @@ export default function AdminUsers() {
       headerName: 'Permissions',
       field: 'permissions',
       flex: 1.5,
+      minWidth: 200,
       cellRenderer: (params: any) => {
         const u = params.data;
         if (!u) return null;
@@ -114,6 +117,7 @@ export default function AdminUsers() {
       headerName: 'Status',
       field: 'status',
       width: 110,
+      minWidth: 100,
       cellRenderer: (params: any) => {
         const status = params.value;
         return (
@@ -129,6 +133,7 @@ export default function AdminUsers() {
       headerName: 'Actions',
       field: 'id',
       width: 100,
+      minWidth: 90,
       sortable: false,
       filter: false,
       cellClass: 'flex justify-end',
@@ -139,7 +144,7 @@ export default function AdminUsers() {
           <div className="flex items-center justify-end gap-1.5 h-full">
             <button
               onClick={() => handleOpenEditModal(u)}
-              className="p-1.5 text-slate-550 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md transition-colors"
+              className="p-1.5 text-slate-550 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md transition-colors cursor-pointer"
               title="Edit"
             >
               <Edit2 size={13} />
@@ -281,7 +286,8 @@ export default function AdminUsers() {
                 sortable: true,
                 filter: true,
                 resizable: true,
-                flex: 1
+                flex: 1,
+                minWidth: 100
               }}
             />
           </div>

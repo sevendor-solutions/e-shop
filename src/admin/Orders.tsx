@@ -37,6 +37,7 @@ export default function AdminOrders() {
       headerName: 'Order ID',
       field: 'orderNumber',
       width: 120,
+      minWidth: 100,
       cellRenderer: (params: any) => {
         return (
           <div className="flex items-center h-full font-bold text-slate-800 dark:text-slate-200">
@@ -49,6 +50,7 @@ export default function AdminOrders() {
       headerName: 'Date',
       field: 'date',
       width: 120,
+      minWidth: 100,
       cellRenderer: (params: any) => {
         return (
           <div className="flex items-center h-full text-slate-550 dark:text-slate-400">
@@ -61,6 +63,7 @@ export default function AdminOrders() {
       headerName: 'Customer',
       field: 'customerName',
       flex: 1.2,
+      minWidth: 180,
       cellRenderer: (params: any) => {
         const o = params.data;
         if (!o) return null;
@@ -76,6 +79,7 @@ export default function AdminOrders() {
       headerName: 'Items',
       field: 'items',
       width: 100,
+      minWidth: 90,
       cellRenderer: (params: any) => {
         const items = params.value || [];
         const itemsCount = items.reduce((sum: number, i: any) => sum + i.quantity, 0);
@@ -90,6 +94,7 @@ export default function AdminOrders() {
       headerName: 'Total',
       field: 'total',
       width: 110,
+      minWidth: 100,
       cellRenderer: (params: any) => {
         return (
           <div className="flex items-center h-full font-extrabold text-slate-850 dark:text-white">
@@ -102,6 +107,7 @@ export default function AdminOrders() {
       headerName: 'Status',
       field: 'status',
       width: 120,
+      minWidth: 110,
       cellRenderer: (params: any) => {
         const val = params.value;
         return (
@@ -127,6 +133,7 @@ export default function AdminOrders() {
       headerName: 'Payment',
       field: 'paymentStatus',
       width: 110,
+      minWidth: 100,
       cellRenderer: (params: any) => {
         return (
           <div className="flex items-center h-full">
@@ -141,6 +148,7 @@ export default function AdminOrders() {
       headerName: 'Actions',
       field: 'id',
       width: 90,
+      minWidth: 80,
       sortable: false,
       filter: false,
       cellClass: 'flex justify-end',
@@ -151,7 +159,7 @@ export default function AdminOrders() {
           <div className="flex items-center justify-end gap-1.5 h-full">
             <button
               onClick={() => handleOpenDetails(o)}
-              className="p-1.5 text-slate-550 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md transition-colors"
+              className="p-1.5 text-slate-550 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md transition-colors cursor-pointer"
               title="View Details"
             >
               <Eye size={13} />
@@ -243,7 +251,7 @@ export default function AdminOrders() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm px-3 py-2 rounded-lg text-slate-650 dark:text-slate-300 focus:outline-none"
+          className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm px-3 py-2 rounded-lg text-slate-655 dark:text-slate-300 focus:outline-none"
         >
           <option value="">All Statuses</option>
           <option value="pending">Pending</option>
@@ -278,7 +286,8 @@ export default function AdminOrders() {
                 sortable: true,
                 filter: true,
                 resizable: true,
-                flex: 1
+                flex: 1,
+                minWidth: 100
               }}
             />
           </div>

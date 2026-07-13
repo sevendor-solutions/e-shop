@@ -381,33 +381,33 @@ export default function AdminProducts() {
       {/* Top Header Row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex flex-col">
-          <h1 className="text-2xl font-extrabold text-slate-800 dark:text-slate-100">Products Inventory</h1>
-          <p className="text-sm text-slate-400">Total catalog: {products.length} products</p>
+          <h1 className="text-lg font-bold text-slate-800 dark:text-slate-100">Products Inventory</h1>
+          <p className="text-xs text-slate-400">Total catalog: {products.length} products</p>
         </div>
-        <Button onClick={handleOpenAddModal} leftIcon={<Plus size={16} />}>
+        <Button onClick={handleOpenAddModal} leftIcon={<Plus size={14} />} className="text-xs py-1.5 px-3">
           Add Product
         </Button>
       </div>
 
       {/* Filters Toolbar */}
-      <div className="flex flex-col lg:flex-row gap-4 bg-white dark:bg-slate-800 p-4 border border-slate-100 dark:border-slate-700/80 rounded-xl shadow-sm">
+      <div className="flex flex-col lg:flex-row gap-3 bg-white dark:bg-slate-800 p-2.5 border border-slate-150 dark:border-slate-700/80 rounded-xl shadow-sm items-center">
         {/* Search */}
-        <div className="flex-1 relative">
+        <div className="flex-1 relative w-full">
           <input
             type="text"
             placeholder="Search SKU, name, brand..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm py-2 pl-9 pr-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40 focus:bg-white"
+            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs py-1.5 pl-8 pr-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40 focus:bg-white"
           />
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
         </div>
         
         {/* Category Select */}
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
-          className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm px-3 py-2 rounded-lg text-slate-650 dark:text-slate-300 focus:outline-none"
+          className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs px-2.5 py-1.5 rounded-lg text-slate-650 dark:text-slate-300 focus:outline-none w-full lg:w-auto"
         >
           <option value="">All Categories</option>
           {categories.map((c) => (
@@ -419,7 +419,7 @@ export default function AdminProducts() {
         <select
           value={stockFilter}
           onChange={(e) => setStockFilter(e.target.value)}
-          className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm px-3 py-2 rounded-lg text-slate-650 dark:text-slate-300 focus:outline-none"
+          className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs px-2.5 py-1.5 rounded-lg text-slate-650 dark:text-slate-300 focus:outline-none w-full lg:w-auto"
         >
           <option value="">All Stock Levels</option>
           <option value="low">Low Stock (&lt; 15)</option>

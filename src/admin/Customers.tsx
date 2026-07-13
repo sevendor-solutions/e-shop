@@ -35,6 +35,7 @@ export default function AdminCustomers() {
       headerName: 'Customer Details',
       field: 'name',
       flex: 1.5,
+      minWidth: 200,
       cellRenderer: (params: any) => {
         const c = params.data;
         if (!c) return null;
@@ -47,7 +48,7 @@ export default function AdminCustomers() {
             />
             <div className="flex flex-col justify-center leading-tight">
               <span className="font-extrabold text-slate-800 dark:text-slate-200">{c.name}</span>
-              <span className="text-[10px] text-slate-450">{c.email}</span>
+              <span className="text-[10px] text-slate-455">{c.email}</span>
             </div>
           </div>
         );
@@ -57,6 +58,7 @@ export default function AdminCustomers() {
       headerName: 'Status',
       field: 'status',
       width: 110,
+      minWidth: 100,
       cellRenderer: (params: any) => {
         const status = params.value;
         return (
@@ -72,6 +74,7 @@ export default function AdminCustomers() {
       headerName: 'Total Orders',
       field: 'totalOrders',
       width: 140,
+      minWidth: 110,
       cellRenderer: (params: any) => {
         return (
           <div className="flex items-center h-full font-mono font-bold">
@@ -84,6 +87,7 @@ export default function AdminCustomers() {
       headerName: 'Total Spent',
       field: 'totalSpent',
       width: 120,
+      minWidth: 100,
       cellRenderer: (params: any) => {
         return (
           <div className="flex items-center h-full font-extrabold text-slate-800 dark:text-white">
@@ -96,6 +100,7 @@ export default function AdminCustomers() {
       headerName: 'Actions',
       field: 'id',
       width: 150,
+      minWidth: 140,
       sortable: false,
       filter: false,
       cellClass: 'flex justify-end',
@@ -109,7 +114,7 @@ export default function AdminCustomers() {
             </Button>
             <button
               onClick={() => handleToggleStatus(c)}
-              className="p-1 rounded text-slate-400 hover:text-slate-650 transition-colors"
+              className="p-1 rounded text-slate-400 hover:text-slate-650 transition-colors cursor-pointer"
               title={c.status === 'active' ? 'Suspend Account' : 'Activate Account'}
             >
               {c.status === 'active' ? (
@@ -210,7 +215,8 @@ export default function AdminCustomers() {
                 sortable: true,
                 filter: true,
                 resizable: true,
-                flex: 1
+                flex: 1,
+                minWidth: 100
               }}
             />
           </div>
