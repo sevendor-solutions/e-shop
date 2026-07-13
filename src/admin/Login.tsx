@@ -89,6 +89,10 @@ export default function AdminLogin() {
     if (isAuthenticated) {
       navigate(from, { replace: true });
     } else {
+      const isExplicitLogout = localStorage.getItem('admin_explicit_logout') === 'true';
+      if (isExplicitLogout) {
+        return;
+      }
       setLoading(true);
       authService.login('admin@eshop.com', 'password123')
         .then((result) => {

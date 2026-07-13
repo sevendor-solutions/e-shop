@@ -18,8 +18,9 @@ interface AuthState {
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => {
-      // Determine if we are loading an admin panel URL on boot
-      const isAdminPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
+      // Determine if we are loading an admin panel URL on boot and check if the user explicitly logged out
+      const isExplicitLogout = typeof window !== 'undefined' && localStorage.getItem('admin_explicit_logout') === 'true';
+      const isAdminPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin') && !isExplicitLogout;
       const defaultUser = isAdminPath ? {
         id: 'usr-1',
         name: 'Administrator',
@@ -43,12 +44,14 @@ export const useAuthStore = create<AuthState>()(
           } else {
             sessionStorage.setItem('eshop_jwt_token', token);
           }
+          localStorage.removeItem('admin_explicit_logout');
           set({ user, token, isAuthenticated: true, error: null });
         },
 
         logout: () => {
           localStorage.removeItem('eshop_jwt_token');
           sessionStorage.removeItem('eshop_jwt_token');
+          localStorage.setItem('admin_explicit_logout', 'true');
           set({ user: null, token: null, isAuthenticated: false, error: null });
         },
 
@@ -69,9 +72,10 @@ export const useAuthStore = create<AuthState>()(
         token: state.token,
         isAuthenticated: state.isAuthenticated,
       }),
-      // Intercept local storage rehydration: if on admin path, enforce admin authentication
+      // Intercept local storage rehydration: if on admin path and didn't explicitly log out, enforce admin authentication
       merge: (persistedState, currentState) => {
-        const isAdminPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
+        const isExplicitLogout = typeof window !== 'undefined' && localStorage.getItem('admin_explicit_logout') === 'true';
+        const isAdminPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin') && !isExplicitLogout;
         if (isAdminPath) {
           return {
             ...currentState,
