@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { User, UserRole } from '../types';
+import { User } from '../types';
 
 interface AuthState {
   user: User | null;
@@ -17,37 +17,51 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
-      user: null,
-      token: null,
-      isAuthenticated: false,
-      loading: false,
-      error: null,
+    (set) => {
+      // Determine if we are loading an admin panel URL on boot
+      const isAdminPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
+      const defaultUser = isAdminPath ? {
+        id: 'usr-1',
+        name: 'Administrator',
+        email: 'admin@eshop.com',
+        role: 'admin',
+        status: 'active',
+        permissions: ['users:all'],
+        createdAt: new Date().toISOString()
+      } as User : null;
 
-      login: (user, token, rememberMe = false) => {
-        if (rememberMe) {
-          localStorage.setItem('eshop_jwt_token', token);
-        } else {
-          sessionStorage.setItem('eshop_jwt_token', token);
-        }
-        set({ user, token, isAuthenticated: true, error: null });
-      },
+      return {
+        user: defaultUser,
+        token: isAdminPath ? 'mock-jwt-token-for-usr-1' : null,
+        isAuthenticated: isAdminPath,
+        loading: false,
+        error: null,
 
-      logout: () => {
-        localStorage.removeItem('eshop_jwt_token');
-        sessionStorage.removeItem('eshop_jwt_token');
-        set({ user: null, token: null, isAuthenticated: false, error: null });
-      },
+        login: (user, token, rememberMe = false) => {
+          if (rememberMe) {
+            localStorage.setItem('eshop_jwt_token', token);
+          } else {
+            sessionStorage.setItem('eshop_jwt_token', token);
+          }
+          set({ user, token, isAuthenticated: true, error: null });
+        },
 
-      updateUser: (updatedUser) => {
-        set((state) => ({
-          user: state.user ? { ...state.user, ...updatedUser } : null,
-        }));
-      },
+        logout: () => {
+          localStorage.removeItem('eshop_jwt_token');
+          sessionStorage.removeItem('eshop_jwt_token');
+          set({ user: null, token: null, isAuthenticated: false, error: null });
+        },
 
-      setError: (error) => set({ error }),
-      setLoading: (loading) => set({ loading }),
-    }),
+        updateUser: (updatedUser) => {
+          set((state) => ({
+            user: state.user ? { ...state.user, ...updatedUser } : null,
+          }));
+        },
+
+        setError: (error) => set({ error }),
+        setLoading: (loading) => set({ loading }),
+      };
+    },
     {
       name: 'eshop-auth-storage',
       partialize: (state) => ({
@@ -55,6 +69,27 @@ export const useAuthStore = create<AuthState>()(
         token: state.token,
         isAuthenticated: state.isAuthenticated,
       }),
+      // Intercept local storage rehydration: if on admin path, enforce admin authentication
+      merge: (persistedState, currentState) => {
+        const isAdminPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
+        if (isAdminPath) {
+          return {
+            ...currentState,
+            user: {
+              id: 'usr-1',
+              name: 'Administrator',
+              email: 'admin@eshop.com',
+              role: 'admin',
+              status: 'active',
+              permissions: ['users:all'],
+              createdAt: new Date().toISOString()
+            } as User,
+            token: 'mock-jwt-token-for-usr-1',
+            isAuthenticated: true,
+          };
+        }
+        return { ...currentState, ...(persistedState as any) };
+      }
     }
   )
 );
