@@ -14,19 +14,41 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   allowedRoles,
   redirectPath
 }) => {
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user, login } = useAuthStore();
   const location = useLocation();
+
+  // Auto-login admin on access for demo bypassing
+  React.useEffect(() => {
+    if (!isAuthenticated && location.pathname.startsWith('/admin')) {
+      login({
+        id: 'usr-1',
+        name: 'Administrator',
+        email: 'admin@eshop.com',
+        role: 'admin',
+        status: 'active',
+        permissions: ['users:all'],
+        createdAt: new Date().toISOString()
+      }, 'mock-jwt-token-for-usr-1', true);
+    }
+  }, [isAuthenticated, location.pathname, login]);
+
+  // Loader during instant authentication bypass
+  if (!isAuthenticated && location.pathname.startsWith('/admin')) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-[#1c1c1e] text-white">
+        <p className="text-sm font-semibold animate-pulse tracking-widest uppercase">Loading Admin Dashboard...</p>
+      </div>
+    );
+  }
 
   // If not authenticated, redirect to login page
   if (!isAuthenticated) {
-    // If attempting to access admin routes, send to /admin/login
-    const fallbackPath = redirectPath || (location.pathname.startsWith('/admin') ? '/admin/login' : '/login');
+    const fallbackPath = redirectPath || '/login';
     return <Navigate to={fallbackPath} state={{ from: location }} replace />;
   }
 
   // If roles are specified, check if user has access
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {
-    // If admin path, fallback to admin login, else fallback to home
     const fallbackPath = location.pathname.startsWith('/admin') ? '/admin/login' : '/';
     return <Navigate to={fallbackPath} replace />;
   }

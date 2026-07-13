@@ -83,6 +83,25 @@ export default function AdminLogin() {
     });
   }, []);
 
+  const { isAuthenticated } = useAuthStore();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(from, { replace: true });
+    } else {
+      setLoading(true);
+      authService.login('admin@eshop.com', 'password123')
+        .then((result) => {
+          login(result.user, result.token, true);
+          toast.success(`Welcome back, ${result.user.name}!`);
+          navigate(from, { replace: true });
+        })
+        .catch(() => {
+          setLoading(false);
+        });
+    }
+  }, [isAuthenticated, login, navigate, setLoading, from]);
+
   const {
     register: registerLogin,
     handleSubmit: handleSubmitLogin,
