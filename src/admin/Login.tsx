@@ -42,10 +42,7 @@ export default function AdminLogin() {
   const [showRegPassword, setShowRegPassword] = useState(false);
   const from = location.state?.from?.pathname || '/admin/dashboard';
 
-  // Toggle modal state and active tab
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(
-    location.state?.from ? true : false
-  );
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(true);
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
 
   const [stats, setStats] = useState({
