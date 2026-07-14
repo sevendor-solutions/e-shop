@@ -14,27 +14,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   allowedRoles,
   redirectPath
 }) => {
-  const { isAuthenticated, user, explicitLogout } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const location = useLocation();
-
-  // Enforce synchronous admin login for client-side routing entries, unless explicitly logged out
-  React.useLayoutEffect(() => {
-    if (!isAuthenticated && !explicitLogout && location.pathname.startsWith('/admin')) {
-      useAuthStore.setState({
-        isAuthenticated: true,
-        user: {
-          id: 'usr-1',
-          name: 'Administrator',
-          email: 'admin@eshop.com',
-          role: 'admin',
-          status: 'active',
-          permissions: ['users:all'],
-          createdAt: new Date().toISOString()
-        },
-        token: 'mock-jwt-token-for-usr-1'
-      });
-    }
-  }, [isAuthenticated, explicitLogout, location.pathname]);
 
   // If not authenticated, redirect to login page
   if (!isAuthenticated) {

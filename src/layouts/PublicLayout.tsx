@@ -37,7 +37,7 @@ export default function PublicLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isAuthenticated, login, logout } = useAuthStore();
-  const { theme, toggleTheme } = useThemeStore();
+
   const { items: cartItems, getTotals, updateQuantity, removeItem, clearCart } = useCartStore();
   const { items: wishlistItems } = useWishlistStore();
 
@@ -65,6 +65,7 @@ export default function PublicLayout() {
   const wishlistCount = wishlistItems.length;
 
   const accountMenuRef = useRef<HTMLDivElement>(null);
+  const authModalRef = useRef<HTMLDivElement>(null);
 
   // Fetch categories for menu
   useEffect(() => {
@@ -97,7 +98,10 @@ export default function PublicLayout() {
   // Click outside to close profile dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (accountMenuRef.current && !accountMenuRef.current.contains(event.target as Node)) {
+      const isInsideAccountMenu = accountMenuRef.current && accountMenuRef.current.contains(event.target as Node);
+      const isInsideAuthModal = authModalRef.current && authModalRef.current.contains(event.target as Node);
+      
+      if (!isInsideAccountMenu && !isInsideAuthModal) {
         setIsAccountMenuOpen(false);
         setIsAuthOpen(false);
       }
@@ -200,13 +204,6 @@ export default function PublicLayout() {
         <div className="hidden md:flex items-center gap-4">
           <Link to="/about" className="hover:underline">About</Link>
           <Link to="/contact" className="hover:underline">Contact Us</Link>
-          <button
-            onClick={toggleTheme}
-            className="p-1 rounded-full hover:bg-white/10 transition-colors"
-            title="Toggle theme"
-          >
-            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
-          </button>
         </div>
       </div>
 
@@ -261,15 +258,7 @@ export default function PublicLayout() {
             <div className="flex-1 lg:hidden" />
 
             {/* User Interaction Icons */}
-            <div className="flex items-center gap-2.5 sm:gap-4">
-              {/* Theme Toggle (Mobile) */}
-              <button
-                onClick={toggleTheme}
-                className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full md:hidden transition-colors"
-              >
-                {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-              </button>
-
+            <div className="flex items-center gap-2 sm:gap-4 relative">
               {/* Desktop Search Bar (Rectangular and next to Wishlist) */}
               <form
                 onSubmit={handleSearchSubmit}
@@ -293,7 +282,7 @@ export default function PublicLayout() {
               {/* Wishlist */}
               <Link
                 to="/wishlist"
-                className="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full relative transition-colors"
+                className="hidden md:inline-flex p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full relative transition-colors"
                 title="Wishlist"
               >
                 <Heart size={22} />
@@ -319,7 +308,7 @@ export default function PublicLayout() {
               </button>
 
               {/* Account Dropdown */}
-              <div className="relative" ref={accountMenuRef}>
+              <div className="hidden md:block relative" ref={accountMenuRef}>
                 {isAuthenticated ? (
                   <button
                     onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
@@ -346,9 +335,56 @@ export default function PublicLayout() {
                   </button>
                 )}
 
-                {/* Corner Auth Dropdown Pop-up Window */}
-                {isAuthOpen && !isAuthenticated && (
-                  <div className="absolute right-[-64px] sm:right-[-24px] md:right-[-74px] mt-2.5 w-80 sm:w-96 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl shadow-2xl p-5 z-50">
+                {/* Profile Options Dropdown */}
+                {isAccountMenuOpen && isAuthenticated && (
+                  <div className="absolute right-0 mt-2.5 w-56 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-xl py-2 z-50">
+                    <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-700">
+                      <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{user?.name}</p>
+                      <p className="text-xs text-slate-400 truncate">{user?.email}</p>
+                    </div>
+                    <div className="p-1">
+                      {user?.role !== 'admin' && user?.role !== 'manager' && (
+                        <Link
+                          to="/account"
+                          className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg transition-colors"
+                        >
+                          <User size={16} />
+                          My Account
+                        </Link>
+                      )}
+                      
+                      {(user?.role === 'admin' || user?.role === 'manager') && (
+                        <Link
+                          to="/admin/dashboard"
+                          className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg transition-colors"
+                        >
+                          <LayoutDashboard size={16} />
+                          Admin Dashboard
+                        </Link>
+                      )}
+                    </div>
+                    <div className="border-t border-slate-100 dark:border-slate-700 p-1 mt-1">
+                      <button
+                        onClick={logout}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-650 hover:bg-red-50 dark:hover:bg-red-955/20 rounded-lg transition-colors text-left"
+                      >
+                        <LogOut size={16} />
+                        Sign Out
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Corner Auth Dropdown Pop-up Window - Moved outside hidden md:block */}
+              {isAuthOpen && !isAuthenticated && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm md:absolute md:inset-auto md:right-0 md:top-full md:mt-2 md:bg-transparent md:backdrop-blur-none">
+                  {/* Click outside to close (mobile backdrop) */}
+                  <div
+                    className="absolute inset-0 md:hidden"
+                    onClick={() => setIsAuthOpen(false)}
+                  />
+                  <div ref={authModalRef} className="relative w-80 sm:w-96 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl shadow-2xl p-5 z-10">
                     {/* Tab Navigation */}
                     <div className="flex border-b border-slate-150 dark:border-slate-700 mb-4 pb-0.5">
                       <button
@@ -380,7 +416,7 @@ export default function PublicLayout() {
                     </div>
 
                     {authError && (
-                      <div className="p-2.5 mb-3 bg-red-50 border border-red-205 text-red-650 rounded-xl text-xs font-semibold">
+                      <div className="p-2.5 mb-3 bg-red-55 border border-red-200 text-red-600 rounded-xl text-xs font-semibold">
                         {authError}
                       </div>
                     )}
@@ -412,14 +448,14 @@ export default function PublicLayout() {
                               value={password}
                               onChange={(e) => setPassword(e.target.value)}
                               placeholder="••••••••"
-                              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl py-2 pl-9 pr-10 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/40 transition-colors"
+                              className="w-full bg-slate-50 dark:bg-slate-905 border border-slate-200 dark:border-slate-700 rounded-xl py-2 pl-9 pr-10 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/40 transition-colors"
                               required
                             />
                             <Lock className="absolute left-3 top-2.5 text-slate-400" size={16} />
                             <button
                               type="button"
                               onClick={() => setShowPassword(!showPassword)}
-                              className="absolute right-3 top-2.5 p-0.5 text-slate-400 hover:text-slate-600"
+                              className="absolute right-3 top-2.5 p-0.5 text-slate-450 hover:text-slate-600"
                             >
                               {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                             </button>
@@ -451,7 +487,7 @@ export default function PublicLayout() {
                         </Button>
 
                         {/* Demo login helper */}
-                        <div className="p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl text-[9px] flex flex-col gap-0.5 text-slate-500 font-semibold">
+                        <div className="p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl text-[9px] flex flex-col gap-0.5 text-slate-505 font-semibold">
                           <span className="font-extrabold text-primary uppercase tracking-wider mb-0.5">Demo Accounts</span>
                           <span>Customer: customer@eshop.com / password123</span>
                         </div>
@@ -476,14 +512,14 @@ export default function PublicLayout() {
 
                         {/* Email */}
                         <div className="flex flex-col gap-1.5">
-                          <label className="text-xs font-bold text-slate-500">Email Address</label>
+                          <label className="text-xs font-bold text-slate-505">Email Address</label>
                           <div className="relative">
                             <input
                               type="email"
                               value={email}
                               onChange={(e) => setEmail(e.target.value)}
                               placeholder="robert@example.com"
-                              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl py-2 pl-9 pr-3 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/40 transition-colors"
+                              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-205 dark:border-slate-700 rounded-xl py-2 pl-9 pr-3 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/40 transition-colors"
                               required
                             />
                             <Mail className="absolute left-3 top-2.5 text-slate-400" size={16} />
@@ -535,48 +571,8 @@ export default function PublicLayout() {
                       </form>
                     )}
                   </div>
-                )}
-
-                {/* Profile Options Dropdown */}
-                {isAccountMenuOpen && isAuthenticated && (
-                  <div className="absolute right-0 mt-2.5 w-56 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-xl py-2 z-50">
-                    <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-700">
-                      <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{user?.name}</p>
-                      <p className="text-xs text-slate-400 truncate">{user?.email}</p>
-                    </div>
-                    <div className="p-1">
-                      <Link
-                        to="/account"
-                        className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg transition-colors"
-                      >
-                        <User size={16} />
-                        My Account
-                      </Link>
-                      
-                      {(user?.role === 'admin' || user?.role === 'manager') && (
-                        <Link
-                          to="/admin/dashboard"
-                          className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg transition-colors"
-                        >
-                          <LayoutDashboard size={16} />
-                          Admin Dashboard
-                        </Link>
-                      )}
-                    </div>
-                    <div className="border-t border-slate-100 dark:border-slate-700 p-1 mt-1">
-                      <button
-                        onClick={logout}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-colors text-left"
-                      >
-                        <LogOut size={16} />
-                        Sign Out
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Mobile Menu Trigger */}
+                </div>
+              )}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full md:hidden transition-colors"
@@ -591,7 +587,7 @@ export default function PublicLayout() {
         {/* Desktop Mega Menu Bar */}
         <nav
           className="hidden md:block border-t border-slate-100 dark:border-slate-800"
-          style={{ backgroundColor: theme === 'dark' ? '#0f172a' : '#ffffff' }}
+          style={{ backgroundColor: '#ffffff' }}
         >
           <div className="max-w-7xl mx-auto px-8">
             <div className="flex items-center gap-8 h-12">
@@ -716,12 +712,77 @@ export default function PublicLayout() {
 
             {/* Links */}
             <div className="flex flex-col gap-4 overflow-y-auto flex-1">
-              <Link to="/products" className="text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-primary">
+              <Link
+                to="/products"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-primary"
+              >
                 All Products
               </Link>
-              <Link to="/categories" className="text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-primary">
-                Categories
+              <Link
+                to="/wishlist"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-primary flex items-center gap-2"
+              >
+                <Heart size={16} /> Wishlist {wishlistCount > 0 && `(${wishlistCount})`}
               </Link>
+              
+              <div className="h-px bg-slate-100 dark:bg-slate-800 my-1" />
+              
+              {isAuthenticated ? (
+                <>
+                  <div className="flex items-center gap-2.5 py-1">
+                    <img
+                      src={user?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop'}
+                      alt={user?.name}
+                      className="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-slate-700"
+                    />
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{user?.name}</span>
+                      <span className="text-[10px] text-slate-400 truncate">{user?.email}</span>
+                    </div>
+                  </div>
+                  {user?.role !== 'admin' && user?.role !== 'manager' && (
+                    <Link
+                      to="/account"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-primary flex items-center gap-2"
+                    >
+                      <User size={16} /> My Account
+                    </Link>
+                  )}
+                  {(user?.role === 'admin' || user?.role === 'manager') && (
+                    <Link
+                      to="/admin/dashboard"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-primary flex items-center gap-2"
+                    >
+                      <LayoutDashboard size={16} /> Admin Dashboard
+                    </Link>
+                  )}
+                  <button
+                    onClick={() => {
+                      logout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="text-sm font-semibold text-red-600 flex items-center gap-2 text-left"
+                  >
+                    <LogOut size={16} /> Sign Out
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setIsAuthOpen(true);
+                    setAuthTab('login');
+                  }}
+                  className="text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-primary flex items-center gap-2 text-left"
+                >
+                  <User size={16} /> Login / Sign Up
+                </button>
+              )}
+
               <div className="h-px bg-slate-100 dark:bg-slate-800 my-2" />
               
               <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Product Categories</h4>
@@ -729,6 +790,7 @@ export default function PublicLayout() {
                 <Link
                   key={c.id}
                   to={`/products?category=${c.slug}`}
+                  onClick={() => setIsMobileMenuOpen(false)}
                   className="text-sm text-slate-600 dark:text-slate-400 hover:text-primary ml-2"
                 >
                   {c.name}

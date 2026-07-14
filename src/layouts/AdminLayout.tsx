@@ -34,11 +34,9 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuthStore();
-  const { theme, toggleTheme } = useThemeStore();
 
   const handleLogout = () => {
-    logout();
-    navigate('/admin/login');
+    navigate('/admin/login?logout=true', { replace: true });
   };
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -572,13 +570,7 @@ export default function AdminLayout() {
               <span className="hidden sm:inline">Storefront</span>
             </Link>
 
-            {/* Theme selector */}
-            <button
-              onClick={toggleTheme}
-              className="p-2 text-slate-400 hover:bg-[#2c2c2e] hover:text-white rounded-full transition-colors"
-            >
-              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
+
 
             {/* Notifications Alert Dropdown */}
             <div className="relative" ref={notificationsRef}>
@@ -655,12 +647,6 @@ export default function AdminLayout() {
                     className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-slate-300 hover:text-white hover:bg-[#2c2c2e] transition-colors"
                   >
                     <Settings size={14} /> Store Settings
-                  </Link>
-                  <Link
-                    to="/account"
-                    className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-slate-300 hover:text-white hover:bg-[#2c2c2e] transition-colors"
-                  >
-                    <Globe size={14} /> View Account
                   </Link>
                   <div className="border-t border-[#2c2c2e] my-1"></div>
                   <button

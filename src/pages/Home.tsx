@@ -167,7 +167,7 @@ export default function Home() {
       </div>
 
       {/* Feature Badges */}
-      <section className="max-w-7xl mx-auto px-6 w-full grid grid-cols-2 lg:grid-cols-4 gap-6">
+      <section className="max-w-7xl mx-auto px-6 w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {featuresList.map((item) => {
           const Icon = item.icon;
           return (

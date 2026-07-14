@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -42,7 +42,7 @@ export default function AdminLogin() {
   const [showRegPassword, setShowRegPassword] = useState(false);
   const from = location.state?.from?.pathname || '/admin/dashboard';
 
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(true);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
 
   const [stats, setStats] = useState({
@@ -80,28 +80,17 @@ export default function AdminLogin() {
     });
   }, []);
 
-  const { isAuthenticated, explicitLogout } = useAuthStore();
+  const { isAuthenticated, logout } = useAuthStore();
+  const [searchParams] = useSearchParams();
+  const isLogout = searchParams.get('logout') === 'true';
 
   React.useLayoutEffect(() => {
-    if (isAuthenticated) {
-      navigate(from, { replace: true });
-    } else if (!explicitLogout) {
-      useAuthStore.setState({
-        isAuthenticated: true,
-        user: {
-          id: 'usr-1',
-          name: 'Administrator',
-          email: 'admin@eshop.com',
-          role: 'admin',
-          status: 'active',
-          permissions: ['users:all'],
-          createdAt: new Date().toISOString()
-        },
-        token: 'mock-jwt-token-for-usr-1'
-      });
+    if (isLogout) {
+      logout();
+    } else if (isAuthenticated) {
       navigate(from, { replace: true });
     }
-  }, [isAuthenticated, explicitLogout, navigate, from]);
+  }, [isAuthenticated, isLogout, navigate, from, logout]);
 
   const {
     register: registerLogin,
@@ -207,7 +196,7 @@ export default function AdminLogin() {
               setActiveTab('login');
               setIsLoginModalOpen(true);
             }}
-            className="px-5 py-2 border border-slate-200 dark:border-slate-700 hover:border-pink-500 dark:hover:border-pink-500 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-pink-500 dark:hover:text-pink-500 transition-all uppercase tracking-wider"
+            className="px-5 py-2.5 rounded-xl text-xs font-bold bg-pink-500 hover:bg-pink-600 text-white transition-all uppercase tracking-wider shadow-md shadow-pink-500/25"
           >
             Login
           </button>

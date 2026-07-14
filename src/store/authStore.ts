@@ -8,7 +8,6 @@ interface AuthState {
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
-  explicitLogout: boolean; // In-memory flag to handle logout loops
   login: (user: User, token: string, rememberMe?: boolean) => void;
   logout: () => void;
   updateUser: (updatedUser: Partial<User>) => void;
@@ -18,82 +17,44 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => {
-      // Determine if we are loading an admin panel URL on boot
-      const isAdminPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
-      const defaultUser = isAdminPath ? {
-        id: 'usr-1',
-        name: 'Administrator',
-        email: 'admin@eshop.com',
-        role: 'admin',
-        status: 'active',
-        permissions: ['users:all'],
-        createdAt: new Date().toISOString()
-      } as User : null;
+    (set) => ({
+      user: null,
+      token: null,
+      isAuthenticated: false,
+      loading: false,
+      error: null,
 
-      return {
-        user: defaultUser,
-        token: isAdminPath ? 'mock-jwt-token-for-usr-1' : null,
-        isAuthenticated: isAdminPath,
-        loading: false,
-        error: null,
-        explicitLogout: false, // Default to false on startup / tab refresh
+      login: (user, token, rememberMe = false) => {
+        if (rememberMe) {
+          localStorage.setItem('eshop_jwt_token', token);
+        } else {
+          sessionStorage.setItem('eshop_jwt_token', token);
+        }
+        set({ user, token, isAuthenticated: true, error: null });
+      },
 
-        login: (user, token, rememberMe = false) => {
-          if (rememberMe) {
-            localStorage.setItem('eshop_jwt_token', token);
-          } else {
-            sessionStorage.setItem('eshop_jwt_token', token);
-          }
-          set({ user, token, isAuthenticated: true, error: null, explicitLogout: false });
-        },
+      logout: () => {
+        localStorage.removeItem('eshop_jwt_token');
+        sessionStorage.removeItem('eshop_jwt_token');
+        set({ user: null, token: null, isAuthenticated: false, error: null });
+      },
 
-        logout: () => {
-          localStorage.removeItem('eshop_jwt_token');
-          sessionStorage.removeItem('eshop_jwt_token');
-          set({ user: null, token: null, isAuthenticated: false, error: null, explicitLogout: true });
-        },
+      updateUser: (updatedUser) => {
+        set((state) => ({
+          user: state.user ? { ...state.user, ...updatedUser } : null,
+        }));
+      },
 
-        updateUser: (updatedUser) => {
-          set((state) => ({
-            user: state.user ? { ...state.user, ...updatedUser } : null,
-          }));
-        },
-
-        setError: (error) => set({ error }),
-        setLoading: (loading) => set({ loading }),
-      };
-    },
+      setError: (error) => set({ error }),
+      setLoading: (loading) => set({ loading }),
+    }),
     {
       name: 'eshop-auth-storage',
-      // Persist only user details and credentials, do NOT persist explicitLogout (keeps it in-memory)
       partialize: (state) => ({
         user: state.user,
         token: state.token,
         isAuthenticated: state.isAuthenticated,
-      }),
-      // Intercept local storage rehydration: if on admin path, enforce admin authentication
-      merge: (persistedState, currentState) => {
-        const isAdminPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
-        if (isAdminPath) {
-          return {
-            ...currentState,
-            user: {
-              id: 'usr-1',
-              name: 'Administrator',
-              email: 'admin@eshop.com',
-              role: 'admin',
-              status: 'active',
-              permissions: ['users:all'],
-              createdAt: new Date().toISOString()
-            } as User,
-            token: 'mock-jwt-token-for-usr-1',
-            isAuthenticated: true,
-            explicitLogout: false
-          };
-        }
-        return { ...currentState, ...(persistedState as any) };
-      }
+      })
     }
   )
 );
